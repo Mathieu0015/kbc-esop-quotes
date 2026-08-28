@@ -1,11 +1,14 @@
 # .github/workflows/quotes.yml
 #
-# Rafraichit chaque soir le JSON des cours KBC ESOP et le commite.
-# Portfolio Performance lira ensuite le fichier via son URL raw.
+# Rafraichit chaque soir le JSON des cours KBC ESOP (un fichier par produit)
+# et le commite. Portfolio Performance lit ensuite chaque fichier via son URL raw.
 #
 # Prerequis : Settings > Secrets and variables > Actions > New repository secret
-#   Nom   : KBC_URL
-#   Valeur: https://option.esop.kbc.be/flat.php?enc=...
+#   Nom    : KBC_URLS
+#   Valeur : une ligne par produit, au format  nom=url
+#
+#            bestof-eunl-2026-03-31=https://option.esop.kbc.be/flat.php?enc=AAA
+#            top-warrant-2025-06-30=https://warrant.esop.kbc.be/flat.php?enc=BBB
 
 name: KBC ESOP quotes
 
@@ -34,10 +37,11 @@ jobs:
 
       - name: Recuperer les cours
         env:
-          KBC_URL: ${{ secrets.KBC_URL }}
-        run: python3 kbc_to_json.py quotes/bestof-eunl-2026-03-31.json
+          KBC_URLS: ${{ secrets.KBC_URLS }}
+        run: python3 kbc_to_json.py quotes
 
       - name: Commiter si changement
+        if: always()             # commite les produits qui ont reussi
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
